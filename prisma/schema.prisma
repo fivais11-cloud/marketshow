@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 model Post {
@@ -62,7 +63,7 @@ model SiteSettings {
   id               String  @id @default(cuid())
   companyName      String  @default("Маркет Шоу")
   phone            String  @default("+7 985 800 97 19")
-  telegram         String? @default("https://t.me/marketshow")
+  telegram         String? @default("https://t.me/TanyaShow")
   max              String? @default("https://max.ru/chat/marketshow")
   telegramBotToken String?
   telegramChatId   String?
