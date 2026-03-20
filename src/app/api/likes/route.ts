@@ -1,35 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 
-// GET likes for a post
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const postId = searchParams.get('postId');
-    const sessionId = searchParams.get('sessionId');
-    
-    if (postId) {
-      const likes = await db.like.count({
-        where: { postId },
-      });
-      
-      let userLiked = false;
-      if (sessionId) {
-        const existingLike = await db.like.findFirst({
-          where: { postId, sessionId },
-        });
-        userLiked = !!existingLike;
-      }
-      
-      return NextResponse.json({ count: likes, userLiked });
-    }
-    
-    return NextResponse.json({ error: 'postId required' }, { status: 400 });
-  } catch (error) {
-    console.error('Error fetching likes:', error);
-    return NextResponse.json({ error: 'Failed to fetch likes' }, { status: 500 });
-  }
-}
+const SUPABASE_URL = 'https://qytsilajkulywydolzpj.supabase.co';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5dHNpbGFqa3VseXd5ZG9senBqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzkzMTA3NCwiZXhwIjoyMDg5NTA3MDc0fQ.1vnktRT5Frlf4j4jJnpcswSrt0A9Yqu9tpYT1ZGu9HA';
+
+const headers = {
+  'apikey': SERVICE_KEY,
+  'Authorization': `Bearer ${SERVICE_KEY}`,
+  'Content-Type': 'application/json',
+};
 
 // POST toggle like
 export async function POST(request: NextRequest) {
@@ -38,42 +16,96 @@ export async function POST(request: NextRequest) {
     const { postId, sessionId } = body;
     
     if (!postId || !sessionId) {
-      return NextResponse.json({ error: 'postId and sessionId required' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing postId or sessionId' }, { status: 400 });
     }
     
-    const existingLike = await db.like.findFirst({
-      where: { postId, sessionId },
-    });
+    // Check if already liked
+    const checkResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/likes?post_id=eq.${postId}&session_id=eq.${sessionId}&select=id`,
+      { headers }
+    );
     
-    if (existingLike) {
-      // Unlike
-      await db.like.delete({
-        where: { id: existingLike.id },
-      });
+    const existing = await checkResponse.json();
+    
+    if (existing.length > 0) {
+      // Remove like
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/likes?post_id=eq.${postId}&session_id=eq.${sessionId}`,
+        { method: 'DELETE', headers }
+      );
       
-      await db.post.update({
-        where: { id: postId },
-        data: { likes: { decrement: 1 } },
-      });
+      // Get current likes count and decrement
+      const postResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=likes`,
+        { headers }
+      );
+      const post = await postResponse.json();
+      const newLikes = Math.max(0, (post[0]?.likes || 0) - 1);
       
-      const count = await db.like.count({ where: { postId } });
-      return NextResponse.json({ count, userLiked: false });
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/posts?id=eq.${postId}`,
+        {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ likes: newLikes }),
+        }
+      );
+      
+      return NextResponse.json({ liked: false, likes: newLikes });
     } else {
-      // Like
-      await db.like.create({
-        data: { postId, sessionId },
+      // Add like
+      await fetch(`${SUPABASE_URL}/rest/v1/likes`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ post_id: postId, session_id: sessionId }),
       });
       
-      await db.post.update({
-        where: { id: postId },
-        data: { likes: { increment: 1 } },
-      });
+      // Get current likes count and increment
+      const postResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=likes`,
+        { headers }
+      );
+      const post = await postResponse.json();
+      const newLikes = (post[0]?.likes || 0) + 1;
       
-      const count = await db.like.count({ where: { postId } });
-      return NextResponse.json({ count, userLiked: true });
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/posts?id=eq.${postId}`,
+        {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ likes: newLikes }),
+        }
+      );
+      
+      return NextResponse.json({ liked: true, likes: newLikes });
     }
   } catch (error) {
     console.error('Error toggling like:', error);
     return NextResponse.json({ error: 'Failed to toggle like' }, { status: 500 });
+  }
+}
+
+// GET check if liked
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const postId = searchParams.get('postId');
+    const sessionId = searchParams.get('sessionId');
+    
+    if (!postId || !sessionId) {
+      return NextResponse.json({ liked: false });
+    }
+    
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/likes?post_id=eq.${postId}&session_id=eq.${sessionId}&select=id`,
+      { headers }
+    );
+    
+    const likes = await response.json();
+    
+    return NextResponse.json({ liked: likes.length > 0 });
+  } catch (error) {
+    console.error('Error checking like:', error);
+    return NextResponse.json({ liked: false });
   }
 }

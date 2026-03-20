@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+
+const SUPABASE_URL = 'https://qytsilajkulywydolzpj.supabase.co';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5dHNpbGFqa3VseXd5ZG9senBqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzkzMTA3NCwiZXhwIjoyMDg5NTA3MDc0fQ.1vnktRT5Frlf4j4jJnpcswSrt0A9Yqu9tpYT1ZGu9HA';
+
+const headers = {
+  'apikey': SERVICE_KEY,
+  'Authorization': `Bearer ${SERVICE_KEY}`,
+  'Content-Type': 'application/json',
+};
 
 // GET orders (admin only)
 export async function GET(request: NextRequest) {
@@ -8,49 +16,40 @@ export async function GET(request: NextRequest) {
     const password = searchParams.get('password');
     
     // Verify admin password
-    const settings = await db.siteSettings.findFirst();
-    if (!settings || password !== settings.adminPassword) {
+    const settingsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/site_settings?id=eq.default&select=admin_password`,
+      { headers }
+    );
+    const settings = await settingsResponse.json();
+    
+    if (!settings.length || password !== settings[0].admin_password) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const orders = await db.order.findMany({
-      include: {
-        items: {
-          include: {
-            post: {
-              include: {
-                hashtags: {
-                  include: {
-                    hashtag: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    // Get orders with items
+    const ordersResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/orders?select=*,items:order_items(*,post:posts(id,title,image_url,price))&order=created_at.desc`,
+      { headers, cache: 'no-store' }
+    );
     
-    const formattedOrders = orders.map((order) => ({
+    const orders = await ordersResponse.json();
+    
+    const formattedOrders = orders.map((order: any) => ({
       id: order.id,
-      customerName: order.customerName,
+      customerName: order.customer_name,
       phone: order.phone,
       email: order.email,
-      totalPrice: order.totalPrice,
+      totalPrice: order.total_price,
       status: order.status,
       source: order.source,
-      createdAt: order.createdAt,
-      items: order.items.map((item) => ({
+      createdAt: order.created_at,
+      items: order.items?.map((item: any) => ({
         id: item.id,
-        postId: item.postId,
-        title: item.post.title,
-        imageUrl: item.post.imageUrl,
+        postId: item.post_id,
         quantity: item.quantity,
         price: item.price,
-      })),
+        post: item.post,
+      })) || [],
     }));
     
     return NextResponse.json(formattedOrders);
@@ -64,95 +63,84 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { phone, email, items, totalPrice, source } = body;
-    
-    if (!phone || !items || items.length === 0) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+    const { customerName, phone, email, totalPrice, source, items } = body;
     
     // Create order
-    const order = await db.order.create({
-      data: {
+    const orderResponse = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=id`, {
+      method: 'POST',
+      headers: { ...headers, 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        customer_name: customerName,
         phone,
-        email: email || null,
-        totalPrice,
+        email,
+        total_price: totalPrice,
         source,
-        items: {
-          create: items.map((item: any) => ({
-            postId: item.postId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        },
-      },
-      include: {
-        items: {
-          include: {
-            post: true,
-          },
-        },
-      },
+        status: 'new',
+      }),
     });
     
-    // Get settings for Telegram notification
-    const settings = await db.siteSettings.findFirst();
+    if (!orderResponse.ok) {
+      console.error('Failed to create order:', await orderResponse.text());
+      return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
+    }
     
-    // Send Telegram notification if bot token is configured
-    if (settings?.telegramBotToken && settings?.telegramChatId) {
-      try {
-        const itemsText = items.map((item: any) => 
-          `• ${item.title} x${item.quantity} = ${(item.price * item.quantity / 100).toLocaleString('ru-RU')}₽`
-        ).join('\n');
-        
-        const message = `🛒 **НОВЫЙ ЗАКАЗ #%${order.id.slice(-6)}**\n\n` +
-          `📞 Телефон: ${phone}\n` +
-          (email ? `📧 Email: ${email}\n` : '') +
-          `\n📦 Состав заказа:\n${itemsText}\n\n` +
-          `💰 **Итого: ${(totalPrice / 100).toLocaleString('ru-RU')}₽**`;
-        
-        await fetch(`https://api.telegram.org/bot${settings.telegramBotToken}/sendMessage`, {
+    const orders = await orderResponse.json();
+    const orderId = orders[0].id;
+    
+    // Create order items
+    if (items && items.length > 0) {
+      for (const item of items) {
+        await fetch(`${SUPABASE_URL}/rest/v1/order_items`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
-            chat_id: settings.telegramChatId,
-            text: message,
-            parse_mode: 'Markdown',
+            order_id: orderId,
+            post_id: item.postId,
+            quantity: item.quantity,
+            price: item.price,
           }),
         });
-      } catch (telegramError) {
-        console.error('Failed to send Telegram notification:', telegramError);
       }
     }
     
-    return NextResponse.json({ 
-      success: true, 
-      orderId: order.id,
-      message: 'Заказ успешно создан! Мы свяжемся с вами в ближайшее время.'
-    });
+    return NextResponse.json({ success: true, orderId });
   } catch (error) {
     console.error('Error creating order:', error);
     return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
   }
 }
 
-// PUT update order status
-export async function PUT(request: NextRequest) {
+// PATCH update order status
+export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
     const { orderId, status, password } = body;
     
     // Verify admin password
-    const settings = await db.siteSettings.findFirst();
-    if (!settings || password !== settings.adminPassword) {
+    const settingsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/site_settings?id=eq.default&select=admin_password`,
+      { headers }
+    );
+    const settings = await settingsResponse.json();
+    
+    if (!settings.length || password !== settings[0].admin_password) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const order = await db.order.update({
-      where: { id: orderId },
-      data: { status },
-    });
+    const updateResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`,
+      {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ status }),
+      }
+    );
     
-    return NextResponse.json(order);
+    if (!updateResponse.ok) {
+      return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
+    }
+    
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating order:', error);
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });

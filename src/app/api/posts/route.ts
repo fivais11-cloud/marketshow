@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getPosts, getHashtags, getSiteSettings } from '@/lib/supabase';
+
+const SUPABASE_URL = 'https://qytsilajkulywydolzpj.supabase.co';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5dHNpbGFqa3VseXd5ZG9senBqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzkzMTA3NCwiZXhwIjoyMDg5NTA3MDc0fQ.1vnktRT5Frlf4j4jJnpcswSrt0A9Yqu9tpYT1ZGu9HA';
+
+const headers = {
+  'apikey': SERVICE_KEY,
+  'Authorization': `Bearer ${SERVICE_KEY}`,
+  'Content-Type': 'application/json',
+};
 
 // GET all posts with optional filtering
 export async function GET(request: NextRequest) {
@@ -8,62 +17,59 @@ export async function GET(request: NextRequest) {
     const hashtag = searchParams.get('hashtag');
     const search = searchParams.get('search');
     
-    const where: any = { isActive: true };
+    // Build query
+    let query = 'select=*,hashtags:post_hashtags(hashtag:hashtags(*))&is_active=eq.true&order=created_at.desc';
     
     if (hashtag) {
-      where.hashtags = {
-        some: {
-          hashtag: {
-            name: hashtag,
-          },
-        },
-      };
+      // Filter by hashtag - need to join
+      const hashtagData = await fetch(`${SUPABASE_URL}/rest/v1/hashtags?name=eq.${hashtag}&select=id`, { headers });
+      const tags = await hashtagData.json();
+      if (tags.length > 0) {
+        const postsWithTag = await fetch(
+          `${SUPABASE_URL}/rest/v1/post_hashtags?hashtag_id=eq.${tags[0].id}&select=post_id`,
+          { headers }
+        );
+        const postIds = (await postsWithTag.json()).map((p: { post_id: string }) => p.post_id);
+        if (postIds.length > 0) {
+          query += `&id=in.(${postIds.join(',')})`;
+        } else {
+          return NextResponse.json([]);
+        }
+      } else {
+        return NextResponse.json([]);
+      }
     }
     
     if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { description: { contains: search } },
-        {
-          hashtags: {
-            some: {
-              hashtag: {
-                name: { contains: search },
-              },
-            },
-          },
-        },
-      ];
+      query += `&or=(title.ilike.%25${search}%25,description.ilike.%25${search}%25)`;
     }
     
-    const posts = await db.post.findMany({
-      where,
-      include: {
-        hashtags: {
-          include: {
-            hashtag: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/posts?${query}`, {
+      headers,
+      cache: 'no-store',
     });
     
-    const formattedPosts = posts.map((post) => ({
+    if (!response.ok) {
+      console.error('Failed to fetch posts:', await response.text());
+      return NextResponse.json([]);
+    }
+    
+    const posts = await response.json();
+    
+    const formattedPosts = posts.map((post: any) => ({
       id: post.id,
       title: post.title,
-      imageUrl: post.imageUrl,
+      imageUrl: post.image_url,
       description: post.description,
       price: post.price,
-      seoTitle: post.seoTitle,
-      seoDescription: post.seoDescription,
-      seoKeywords: post.seoKeywords,
-      likes: post.likes,
-      isActive: post.isActive,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      hashtags: post.hashtags.map((h) => h.hashtag),
+      seoTitle: post.seo_title,
+      seoDescription: post.seo_description,
+      seoKeywords: post.seo_keywords,
+      likes: post.likes || 0,
+      isActive: post.is_active,
+      createdAt: post.created_at,
+      updatedAt: post.updated_at,
+      hashtags: post.hashtags?.map((h: any) => h.hashtag).filter(Boolean) || [],
     }));
     
     return NextResponse.json(formattedPosts);
@@ -90,72 +96,79 @@ export async function POST(request: NextRequest) {
     } = body;
     
     // Verify admin password
-    const settings = await db.siteSettings.findFirst();
-    if (!settings || password !== settings.adminPassword) {
+    const settings = await getSiteSettings();
+    if (!settings || password !== settings.admin_password) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // Create or find hashtags
-    const hashtagConnections = [];
+    // Create post
+    const postResponse = await fetch(`${SUPABASE_URL}/rest/v1/posts?select=*`, {
+      method: 'POST',
+      headers: { ...headers, 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        title: title || 'Без названия',
+        image_url: imageUrl,
+        description,
+        price: price || 0,
+        seo_title: seoTitle,
+        seo_description: seoDescription,
+        seo_keywords: seoKeywords,
+        is_active: true,
+      }),
+    });
+    
+    if (!postResponse.ok) {
+      console.error('Failed to create post:', await postResponse.text());
+      return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });
+    }
+    
+    const posts = await postResponse.json();
+    const post = posts[0];
+    
+    // Create hashtag connections
     if (hashtags && hashtags.length > 0) {
       for (const tagName of hashtags) {
         const normalizedName = tagName.startsWith('#') ? tagName.slice(1) : tagName;
-        let hashtag = await db.hashtag.findFirst({
-          where: { name: normalizedName },
-        });
         
-        if (!hashtag) {
-          hashtag = await db.hashtag.create({
-            data: { name: normalizedName },
+        // Find or create hashtag
+        let hashtagId: string;
+        const existingTag = await fetch(`${SUPABASE_URL}/rest/v1/hashtags?name=eq.${normalizedName}&select=id`, { headers });
+        const existingTags = await existingTag.json();
+        
+        if (existingTags.length > 0) {
+          hashtagId = existingTags[0].id;
+        } else {
+          const newTag = await fetch(`${SUPABASE_URL}/rest/v1/hashtags?select=id`, {
+            method: 'POST',
+            headers: { ...headers, 'Prefer': 'return=representation' },
+            body: JSON.stringify({ name: normalizedName }),
           });
+          const tagData = await newTag.json();
+          hashtagId = tagData[0].id;
         }
         
-        hashtagConnections.push({ hashtagId: hashtag.id });
+        // Create connection
+        await fetch(`${SUPABASE_URL}/rest/v1/post_hashtags`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ post_id: post.id, hashtag_id: hashtagId }),
+        });
       }
     }
     
-    // Price in rubles, store as kopecks (multiply by 100)
-    const priceInKopecks = Math.round((price || 0) * 100);
-    
-    const post = await db.post.create({
-      data: {
-        title: title || 'Без названия',
-        imageUrl,
-        description,
-        price: priceInKopecks,
-        seoTitle,
-        seoDescription,
-        seoKeywords,
-        hashtags: {
-          create: hashtagConnections.map((h) => ({ hashtagId: h.hashtagId })),
-        },
-      },
-      include: {
-        hashtags: {
-          include: {
-            hashtag: true,
-          },
-        },
-      },
-    });
-    
-    const formattedPost = {
+    return NextResponse.json({
       id: post.id,
       title: post.title,
-      imageUrl: post.imageUrl,
+      imageUrl: post.image_url,
       description: post.description,
       price: post.price,
-      seoTitle: post.seoTitle,
-      seoDescription: post.seoDescription,
-      seoKeywords: post.seoKeywords,
-      likes: post.likes,
-      isActive: post.isActive,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      hashtags: post.hashtags.map((h) => h.hashtag),
-    };
-    
-    return NextResponse.json(formattedPost);
+      seoTitle: post.seo_title,
+      seoDescription: post.seo_description,
+      seoKeywords: post.seo_keywords,
+      likes: post.likes || 0,
+      isActive: post.is_active,
+      createdAt: post.created_at,
+    });
   } catch (error) {
     console.error('Error creating post:', error);
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });
