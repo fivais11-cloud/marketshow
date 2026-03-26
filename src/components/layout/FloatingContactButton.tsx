@@ -91,7 +91,7 @@ export function FloatingContactButton({ source }: FloatingContactButtonProps) {
   
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - Gold accent */}
       <motion.div
         className="fixed bottom-6 right-6 z-50"
         initial={{ scale: 0 }}
@@ -100,24 +100,24 @@ export function FloatingContactButton({ source }: FloatingContactButtonProps) {
       >
         <Button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full shadow-lg btn-premium ${
+          className={`w-14 h-14 rounded-full shadow-xl transition-all duration-300 ${
             isOpen 
-              ? 'bg-foreground hover:bg-foreground/90' 
-              : 'bg-primary hover:bg-primary/90'
-          } text-primary-foreground`}
+              ? 'bg-[#264348] hover:bg-[#264348]/90 rotate-0' 
+              : 'bg-[#C9A962] hover:bg-[#C9A962]/90'
+          } text-white`}
         >
-          {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+          {isOpen ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
         </Button>
       </motion.div>
       
-      {/* Quick Actions Menu */}
+      {/* Quick Actions Menu - Minimal */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 right-6 z-50 flex flex-col gap-3"
+            className="fixed bottom-24 right-6 z-50 flex flex-col gap-2"
           >
             {/* Telegram */}
             <motion.div
@@ -127,7 +127,7 @@ export function FloatingContactButton({ source }: FloatingContactButtonProps) {
             >
               <Button
                 onClick={handleTelegramClick}
-                className="bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-full px-6 shadow-lg"
+                className="bg-white dark:bg-[#1a1f21] text-[#264348] dark:text-white rounded-full px-5 h-11 shadow-lg border border-[#264348]/5 dark:border-white/5 hover:border-[#C9A962] hover:text-[#C9A962] transition-all"
               >
                 <Send className="h-4 w-4 mr-2" />
                 Telegram
@@ -138,11 +138,11 @@ export function FloatingContactButton({ source }: FloatingContactButtonProps) {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.15 }}
             >
               <Button
                 onClick={handleMaxClick}
-                className="bg-[#6B52AE] hover:bg-[#5a4598] text-white rounded-full px-6 shadow-lg"
+                className="bg-white dark:bg-[#1a1f21] text-[#264348] dark:text-white rounded-full px-5 h-11 shadow-lg border border-[#264348]/5 dark:border-white/5 hover:border-[#C9A962] hover:text-[#C9A962] transition-all"
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
                 Max
@@ -153,11 +153,11 @@ export function FloatingContactButton({ source }: FloatingContactButtonProps) {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.2 }}
             >
               <Button
                 onClick={() => setShowCallback(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 shadow-lg"
+                className="bg-[#264348] hover:bg-[#264348]/90 text-white rounded-full px-5 h-11 shadow-lg"
               >
                 <Phone className="h-4 w-4 mr-2" />
                 Перезвонить
@@ -167,43 +167,48 @@ export function FloatingContactButton({ source }: FloatingContactButtonProps) {
         )}
       </AnimatePresence>
       
-      {/* Callback Dialog */}
+      {/* Callback Dialog - Refined */}
       <Dialog open={showCallback} onOpenChange={setShowCallback}>
-        <DialogContent className="sm:max-w-[400px] glass-card border-white/10">
+        <DialogContent className="sm:max-w-[400px] bg-white dark:bg-[#1a1f21] border-[#264348]/5 dark:border-white/5">
           <DialogHeader>
-            <DialogTitle className="gradient-text">Заказать звонок</DialogTitle>
+            <DialogTitle 
+              className="text-[#264348] dark:text-white"
+              style={{ fontFamily: 'Cinzel, Georgia, serif' }}
+            >
+              Заказать звонок
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCallbackSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Ваше имя</Label>
+              <Label htmlFor="name" className="text-[#264348]/60 dark:text-white/40 text-xs uppercase tracking-wider">Ваше имя</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Как к вам обращаться?"
-                className="border-primary/20 focus:border-primary focus:ring-primary/20"
+                className="border-[#264348]/10 dark:border-white/10 focus:border-[#C9A962] focus:ring-[#C9A962]/20 bg-transparent"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="callback-phone">Телефон *</Label>
+              <Label htmlFor="callback-phone" className="text-[#264348]/60 dark:text-white/40 text-xs uppercase tracking-wider">Телефон *</Label>
               <Input
                 id="callback-phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+7 (999) 123-45-67"
-                className="border-primary/20 focus:border-primary focus:ring-primary/20"
+                className="border-[#264348]/10 dark:border-white/10 focus:border-[#C9A962] focus:ring-[#C9A962]/20 bg-transparent"
                 required
               />
             </div>
             {source && (
-              <p className="text-sm text-foreground/50">
-                Интересует: <span className="text-primary">{source}</span>
+              <p className="text-xs text-[#264348]/40 dark:text-white/30">
+                Интересует: <span className="text-[#C9A962]">{source}</span>
               </p>
             )}
             <Button
               type="submit"
-              className="w-full btn-premium bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="w-full bg-[#C9A962] hover:bg-[#C9A962]/90 text-white rounded-full"
               disabled={callbackMutation.isPending}
             >
               {callbackMutation.isPending ? (

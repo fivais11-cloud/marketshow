@@ -7,7 +7,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { usePosts } from '@/hooks/useApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X, Loader2, Sparkles } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 
 export function PostsGrid() {
   const { posts, searchQuery, selectedHashtag, setSelectedHashtag, setSearchQuery } = useAppStore();
@@ -24,14 +24,25 @@ export function PostsGrid() {
   
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
-          <div className="relative w-20 h-20 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-            <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary animate-pulse" />
+          {/* Enso loader */}
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <svg viewBox="0 0 100 100" className="w-full h-full animate-pulse">
+              <circle
+                cx="50"
+                cy="50"
+                r="42"
+                fill="none"
+                stroke="#C9A962"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeDasharray="220 260"
+                transform="rotate(-45 50 50)"
+              />
+            </svg>
           </div>
-          <p className="text-foreground/50">Загружаем товары...</p>
+          <p className="text-[#264348]/40 dark:text-white/40 text-sm">Загружаем товары...</p>
         </div>
       </div>
     );
@@ -39,26 +50,36 @@ export function PostsGrid() {
   
   return (
     <div>
-      {/* Active Filters */}
+      {/* Active Filters - Minimal */}
       {(selectedHashtag || searchQuery) && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex items-center gap-3 flex-wrap"
+          className="mb-10 flex items-center gap-3 flex-wrap"
         >
-          <span className="text-sm text-foreground/50">Фильтры:</span>
+          <span className="text-xs text-[#264348]/40 dark:text-white/30 uppercase tracking-wider">Фильтр:</span>
           {selectedHashtag && (
-            <Badge className="bg-primary text-primary-foreground gap-1 px-3 py-1 rounded-full">
+            <Badge 
+              className="bg-[#264348] text-white gap-1.5 px-3 py-1 rounded-full text-xs font-normal"
+            >
               #{selectedHashtag}
-              <button onClick={() => setSelectedHashtag(null)}>
+              <button 
+                onClick={() => setSelectedHashtag(null)}
+                className="hover:text-[#C9A962] transition-colors"
+              >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
           )}
           {searchQuery && (
-            <Badge className="bg-accent text-accent-foreground gap-1 px-3 py-1 rounded-full">
+            <Badge 
+              className="bg-[#6B4E71] text-white gap-1.5 px-3 py-1 rounded-full text-xs font-normal"
+            >
               {searchQuery}
-              <button onClick={() => setSearchQuery('')}>
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="hover:text-[#C9A962] transition-colors"
+              >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
@@ -67,45 +88,54 @@ export function PostsGrid() {
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="text-foreground/50 hover:text-foreground"
+            className="text-xs text-[#264348]/40 dark:text-white/30 hover:text-[#264348] dark:hover:text-white h-7 px-2"
           >
-            Сбросить все
+            Сбросить
           </Button>
         </motion.div>
       )}
       
-      {/* Posts Grid */}
+      {/* Posts Grid - More spacing (Ma principle) */}
       {posts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
           {posts.map((post, index) => (
-            <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.4 }}
-            >
-              <PostCard post={post} />
-            </motion.div>
+            <PostCard key={post.id} post={post} />
           ))}
         </div>
       ) : (
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-16"
+          className="text-center py-20"
         >
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <span className="text-4xl">🎈</span>
+          <div className="w-20 h-20 mx-auto mb-6">
+            <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+              <circle
+                cx="50"
+                cy="50"
+                r="42"
+                fill="none"
+                stroke="#264348"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeDasharray="220 260"
+                transform="rotate(-45 50 50)"
+                className="dark:stroke-white"
+              />
+            </svg>
           </div>
-          <h3 className="text-xl font-medium text-foreground mb-2">
+          <h3 
+            className="text-xl font-medium text-[#264348] dark:text-white mb-2"
+            style={{ fontFamily: 'Cinzel, Georgia, serif' }}
+          >
             Ничего не найдено
           </h3>
-          <p className="text-foreground/50 mb-6 max-w-md mx-auto">
-            Попробуйте изменить параметры поиска или выбрать другой хэштег
+          <p className="text-[#264348]/40 dark:text-white/30 mb-8 max-w-md mx-auto text-sm">
+            Попробуйте изменить параметры поиска
           </p>
           <Button
             onClick={clearFilters}
-            className="btn-premium bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="bg-[#C9A962] hover:bg-[#C9A962]/90 text-white rounded-full px-6"
           >
             Сбросить фильтры
           </Button>

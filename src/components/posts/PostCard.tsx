@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Heart, Send, MessageCircle, ShoppingBag, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,17 +24,23 @@ export function PostCard({ post }: PostCardProps) {
   const hashtagClick = useHashtagClick();
   const { data: settings } = useSettings();
   
-  const handleLike = () => {
+  const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     likeMutation.mutate({ postId: post.id });
   };
   
-  const handleHashtagClick = async (hashtag: { id: string; name: string }) => {
-    await hashtagClick.mutateAsync(hashtag.id);
+  const handleHashtagClick = (e: React.MouseEvent, hashtag: { id: string; name: string }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    hashtagClick.mutateAsync(hashtag.id);
     setSelectedHashtag(hashtag.name);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
-  const handleMessengerClick = (type: 'telegram' | 'max') => {
+  const handleMessengerClick = (e: React.MouseEvent, type: 'telegram' | 'max') => {
+    e.preventDefault();
+    e.stopPropagation();
     const shortTitle = post.title || post.description.slice(0, 30);
     const text = `Здравствуйте! Интересует товар: "${shortTitle}"`;
     
@@ -50,7 +57,9 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
   
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     addToCart({
       postId: post.id,
       title: post.title || 'Товар',
@@ -63,11 +72,11 @@ export function PostCard({ post }: PostCardProps) {
   };
   
   const formatPrice = (price: number) => {
-    return (price / 100).toLocaleString('ru-RU');
+    return price.toLocaleString('ru-RU');
   };
 
   // Check if description is long enough for "Read more"
-  const DESCRIPTION_LIMIT = 60;
+  const DESCRIPTION_LIMIT = 80;
   const isLongDescription = post.description.length > DESCRIPTION_LIMIT;
   const displayDescription = isExpanded || !isLongDescription 
     ? post.description 
@@ -75,155 +84,148 @@ export function PostCard({ post }: PostCardProps) {
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.5 }}
+      className="h-full"
     >
-      <Card className="group overflow-hidden glass-card border-0 hover:shadow-xl transition-all duration-500">
-        {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-primary/5 to-accent/5">
-          <Image
-            src={post.imageUrl}
-            alt={post.title || post.description.slice(0, 50)}
-            fill
-            className={`object-cover transition-all duration-700 ${
-              imageLoaded ? 'scale-100 blur-0' : 'scale-110 blur-lg'
-            } group-hover:scale-105`}
-            onLoad={() => setImageLoaded(true)}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 animate-pulse" />
-          )}
-          
-          {/* Price Badge */}
-          {post.price > 0 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="absolute top-3 right-3 px-3 py-1.5 rounded-full glass text-sm font-semibold price-tag"
-            >
-              {formatPrice(post.price)} ₽
-            </motion.div>
-          )}
-          
-          {/* Overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </div>
-        
-        {/* Content */}
-        <div className="p-4 md:p-5">
-          {/* Title */}
-          {post.title && (
-            <h3 className="font-semibold text-foreground mb-2 line-clamp-2">
-              {post.title}
-            </h3>
-          )}
-          
-          {/* Description */}
-          <p className="text-foreground/70 text-sm leading-relaxed">
-            {displayDescription}
-          </p>
-          
-          {/* Read More Button */}
-          {isLongDescription && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1 text-primary text-sm mt-2 hover:text-primary/80 transition-colors"
-            >
-              {isExpanded ? (
-                <>Свернуть <ChevronUp className="h-4 w-4" /></>
-              ) : (
-                <>Читать далее <ChevronDown className="h-4 w-4" /></>
-              )}
-            </button>
-          )}
-          
-          {/* Hashtags */}
-          {post.hashtags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {post.hashtags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="cursor-pointer bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs rounded-full px-2.5 py-0.5"
-                  onClick={() => handleHashtagClick(tag)}
-                >
-                  #{tag.name}
-                </Badge>
-              ))}
-            </div>
-          )}
-          
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-4 mt-4 border-t border-primary/10">
-            {/* Like Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLike}
-              className={`gap-1.5 rounded-full px-3 ${
-                post.userLiked 
-                  ? 'text-primary hover:text-primary' 
-                  : 'text-foreground/50 hover:text-primary'
-              }`}
-            >
-              <motion.div
-                whileTap={{ scale: 1.3 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-              >
-                <Heart 
-                  className={`h-5 w-5 ${post.userLiked ? 'fill-primary' : ''}`} 
-                />
-              </motion.div>
-              <span className="text-xs font-medium">{post.likes}</span>
-            </Button>
+      <Link href={`/product/${post.id}`} className="block h-full">
+        <Card className="group overflow-hidden h-full bg-white dark:bg-[#1a1f21] border-0 shadow-sm hover:shadow-xl transition-all duration-500 rounded-2xl">
+          {/* Image Container - More space */}
+          <div className="relative aspect-[4/3] overflow-hidden bg-[#FAFAF8] dark:bg-[#1a1f21]">
+            <Image
+              src={post.imageUrl}
+              alt={post.title || post.description.slice(0, 50)}
+              fill
+              className={`object-cover transition-all duration-700 ${
+                imageLoaded ? 'scale-100 blur-0 opacity-100' : 'scale-105 blur-md opacity-0'
+              } group-hover:scale-[1.02]`}
+              onLoad={() => setImageLoaded(true)}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+            {!imageLoaded && (
+              <div className="absolute inset-0 bg-[#FAFAF8] dark:bg-[#1a1f21] animate-pulse" />
+            )}
             
-            {/* Action Buttons */}
-            <div className="flex items-center gap-1">
-              {/* Add to Cart */}
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            {/* Price Badge - Minimal gold */}
+            {post.price > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/95 dark:bg-[#1a1f21]/95 backdrop-blur-sm text-sm font-medium text-[#C9A962] shadow-sm"
+                style={{ fontFamily: 'Cinzel, Georgia, serif' }}
+              >
+                {formatPrice(post.price)} ₽
+              </motion.div>
+            )}
+          </div>
+          
+          {/* Content - Generous padding */}
+          <div className="p-5 md:p-6">
+            {/* Title - Serif */}
+            {post.title && (
+              <h3 
+                className="font-medium text-[#264348] dark:text-white mb-2 line-clamp-2 text-lg"
+                style={{ fontFamily: 'Cinzel, Georgia, serif' }}
+              >
+                {post.title}
+              </h3>
+            )}
+            
+            {/* Description */}
+            <p className="text-[#264348]/50 dark:text-white/40 text-sm leading-relaxed mb-3">
+              {displayDescription}
+            </p>
+            
+            {/* Read More */}
+            {isLongDescription && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+                className="flex items-center gap-1 text-[#C9A962] text-xs mt-1 hover:text-[#C9A962]/80 transition-colors"
+              >
+                {isExpanded ? (
+                  <>Свернуть <ChevronUp className="h-3 w-3" /></>
+                ) : (
+                  <>Читать далее <ChevronDown className="h-3 w-3" /></>
+                )}
+              </button>
+            )}
+            
+            {/* Hashtags - Minimal */}
+            {post.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-4">
+                {post.hashtags.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag.id}
+                    onClick={(e) => handleHashtagClick(e, tag)}
+                    className="text-[10px] tracking-wide text-[#6B4E71]/60 dark:text-white/30 hover:text-[#C9A962] dark:hover:text-[#C9A962] transition-colors cursor-pointer uppercase"
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+            )}
+            
+            {/* Actions - Clean */}
+            <div className="flex items-center justify-between pt-4 mt-4 border-t border-[#264348]/5 dark:border-white/5">
+              {/* Like */}
+              <button
+                onClick={handleLike}
+                className={`flex items-center gap-1.5 transition-colors ${
+                  post.userLiked 
+                    ? 'text-[#D4A5A5]' 
+                    : 'text-[#264348]/30 dark:text-white/30 hover:text-[#D4A5A5]'
+                }`}
+              >
+                <motion.div
+                  whileTap={{ scale: 1.2 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                  <Heart 
+                    className={`h-4 w-4 ${post.userLiked ? 'fill-current' : ''}`} 
+                  />
+                </motion.div>
+                <span className="text-xs font-medium">{post.likes || 0}</span>
+              </button>
+              
+              {/* Action Icons */}
+              <div className="flex items-center gap-0.5">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleAddToCart}
-                  className="rounded-full text-accent hover:bg-accent/10 hover:text-accent"
-                  title="Добавить в корзину"
+                  className="h-8 w-8 p-0 text-[#264348]/40 dark:text-white/40 hover:text-[#C9A962] hover:bg-transparent"
                 >
                   <ShoppingBag className="h-4 w-4" />
                 </Button>
-              </motion.div>
-              
-              {/* Telegram */}
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleMessengerClick('telegram')}
-                  className="rounded-full text-[#0088cc] hover:bg-[#0088cc]/10"
-                  title="Написать в Telegram"
+                  onClick={(e) => handleMessengerClick(e, 'telegram')}
+                  className="h-8 w-8 p-0 text-[#264348]/40 dark:text-white/40 hover:text-[#C9A962] hover:bg-transparent"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
-              </motion.div>
-              
-              {/* Max */}
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleMessengerClick('max')}
-                  className="rounded-full text-[#6B52AE] hover:bg-[#6B52AE]/10"
-                  title="Написать в Max"
+                  onClick={(e) => handleMessengerClick(e, 'max')}
+                  className="h-8 w-8 p-0 text-[#264348]/40 dark:text-white/40 hover:text-[#C9A962] hover:bg-transparent"
                 >
                   <MessageCircle className="h-4 w-4" />
                 </Button>
-              </motion.div>
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </Link>
     </motion.div>
   );
 }

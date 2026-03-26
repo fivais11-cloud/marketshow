@@ -5,7 +5,7 @@ import { PostsGrid } from '@/components/posts/PostsGrid';
 import { useSettings, useHashtags, useHashtagClick } from '@/hooks/useApi';
 import { useAppStore } from '@/store/useAppStore';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Phone, Clock, MapPin, Truck, Sparkles, PartyPopper, Heart, Camera, Gift, Crown } from 'lucide-react';
+import { Phone, Clock, MapPin, Truck, Sparkles, Heart, Camera, Gift, Crown } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -21,147 +21,178 @@ export default function HomePage() {
     window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
-  // Categories in Instagram Stories style
+  // Categories - refined
   const categories = [
     { 
       id: 'all',
       name: 'Все', 
-      gradient: 'from-primary via-accent to-primary',
       icon: Sparkles,
       filter: null 
     },
     { 
       id: 'свадьба',
       name: 'Свадьба', 
-      gradient: 'from-pink-400 via-rose-300 to-pink-400',
       icon: Heart,
       filter: 'свадьба' 
     },
     { 
       id: 'детскийпраздник',
       name: 'Детские', 
-      gradient: 'from-blue-400 via-cyan-300 to-blue-400',
       icon: Gift,
       filter: 'детскийпраздник' 
     },
     { 
       id: 'фотозона',
       name: 'Фотозоны', 
-      gradient: 'from-purple-400 via-violet-300 to-purple-400',
       icon: Camera,
       filter: 'фотозона' 
     },
     { 
       id: 'корпоратив',
       name: 'Корпоратив', 
-      gradient: 'from-amber-400 via-yellow-300 to-amber-400',
       icon: Crown,
       filter: 'корпоратив' 
     },
   ];
   
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-16 md:pt-32 md:pb-24">
-        {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
+    <div className="min-h-screen pattern-seigaiha">
+      {/* Hero Section - Japanese Minimalism */}
+      <section className="relative overflow-hidden pt-24 pb-20 md:pt-36 md:pb-32">
+        {/* Subtle background elements */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#264348]/[0.02] to-transparent" />
         
-        {/* Floating Balloons - decorative */}
-        <div className="absolute top-32 left-[5%] w-8 h-8 rounded-full bg-primary/20 blur-sm animate-float hidden lg:block" />
-        <div className="absolute top-48 right-[10%] w-6 h-6 rounded-full bg-accent/20 blur-sm animate-float-slow hidden lg:block" />
-        <div className="absolute bottom-32 left-[15%] w-5 h-5 rounded-full bg-primary/15 blur-sm animate-float hidden lg:block" />
+        {/* Enso Circle - Large decorative element */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] opacity-[0.03] pointer-events-none">
+          <svg viewBox="0 0 200 200" className="w-full h-full">
+            <circle
+              cx="100"
+              cy="100"
+              r="90"
+              fill="none"
+              stroke="#264348"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeDasharray="450 565"
+              transform="rotate(-45 100 100)"
+            />
+          </svg>
+        </div>
         
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-4 lg:px-8 relative">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center max-w-4xl mx-auto"
+            className="text-center max-w-3xl mx-auto"
           >
-            {/* Badge */}
+            {/* Small Enso Logo */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-6"
+              transition={{ delay: 0.1 }}
+              className="flex justify-center mb-8"
             >
-              <Sparkles className="h-4 w-4 text-accent" />
-              <span className="text-sm font-medium">Премиум оформление праздников</span>
+              <div className="w-16 h-16 md:w-20 md:h-20">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    fill="none"
+                    stroke="#C9A962"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeDasharray="220 260"
+                    transform="rotate(-45 50 50)"
+                  />
+                </svg>
+              </div>
             </motion.div>
             
-            {/* Title */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              <span className="gradient-text">Маркет Шоу</span>
-              <br />
-              <span className="text-foreground/80">воздушные шары</span>
-            </h1>
+            {/* Title - Elegant Serif */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-wide mb-4 text-[#264348] dark:text-white"
+              style={{ fontFamily: 'Cinzel, Georgia, serif' }}
+            >
+              Маркет Шоу
+            </motion.h1>
             
-            <p className="text-lg md:text-xl text-foreground/60 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Создаём незабываемые праздники с премиум оформлением. 
-              Доставка по Москве с заботой о каждом клиенте.
-            </p>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-sm md:text-base tracking-[0.3em] uppercase text-[#C9A962] mb-8"
+            >
+              Premium Balloon Art
+            </motion.p>
             
-            {/* Quick Info */}
-            <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm mb-10">
-              <div className="flex items-center gap-2 text-foreground/50">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Truck className="h-4 w-4 text-primary" />
-                </div>
-                <span>Бесплатно от 3000₽</span>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-base md:text-lg text-[#264348]/60 dark:text-white/50 mb-10 max-w-xl mx-auto leading-relaxed"
+            >
+              Создаём незабываемые моменты с премиум оформлением.
+              Доставка по Москве с заботой о каждом празднике.
+            </motion.p>
+            
+            {/* Quick Info - Minimal */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-wrap justify-center gap-6 md:gap-10 text-sm mb-10"
+            >
+              <div className="flex items-center gap-2 text-[#264348]/50 dark:text-white/40">
+                <Truck className="h-4 w-4" />
+                <span>Доставка бесплатно от 3000₽</span>
               </div>
-              <div className="flex items-center gap-2 text-foreground/50">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Clock className="h-4 w-4 text-primary" />
-                </div>
-                <span>{settings?.workingHours || 'Пн-Вс: 9:00 - 21:00'}</span>
-              </div>
-              <div className="flex items-center gap-2 text-foreground/50">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <MapPin className="h-4 w-4 text-primary" />
-                </div>
+              <div className="flex items-center gap-2 text-[#264348]/50 dark:text-white/40">
+                <MapPin className="h-4 w-4" />
                 <span>Москва</span>
               </div>
-            </div>
+            </motion.div>
             
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap justify-center gap-4">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  asChild
-                  size="lg"
-                  className="btn-premium bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8"
+            {/* CTA - Single prominent button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-wrap justify-center gap-4"
+            >
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <a
+                  href={`tel:${settings?.phone?.replace(/\s/g, '') || '+79858009719'}`}
+                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#C9A962] hover:bg-[#C9A962]/90 text-white text-sm font-medium rounded-full transition-all duration-300 hover:shadow-xl hover:shadow-[#C9A962]/20"
                 >
-                  <a href={`tel:${settings?.phone?.replace(/\s/g, '') || '+79858009719'}`}>
-                    <Phone className="h-5 w-5 mr-2" />
-                    {settings?.phone || '+7 985 800 97 19'}
-                  </a>
-                </Button>
+                  <Phone className="h-4 w-4" />
+                  Заказать
+                </a>
               </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="rounded-full px-8 border-primary/20 hover:bg-primary/5"
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  href="/delivery"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 text-[#264348]/70 dark:text-white/60 text-sm font-medium rounded-full border border-[#264348]/10 dark:border-white/10 hover:border-[#C9A962] hover:text-[#C9A962] transition-all duration-300"
                 >
-                  <Link href="/delivery">Условия доставки</Link>
-                </Button>
+                  Условия доставки
+                </Link>
               </motion.div>
-            </div>
+            </motion.div>
           </motion.div>
           
-          {/* Categories - Instagram Stories Style */}
+          {/* Categories - Minimal pills */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="mt-12"
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="mt-16"
           >
             <ScrollArea className="w-full">
-              <div className="flex gap-4 pb-2 justify-center flex-wrap md:flex-nowrap">
+              <div className="flex gap-2 pb-2 justify-center flex-wrap">
                 {categories.map((category, index) => {
                   const Icon = category.icon;
                   const isActive = selectedHashtag === category.filter || (!selectedHashtag && category.filter === null);
@@ -169,11 +200,11 @@ export default function HomePage() {
                   return (
                     <motion.button
                       key={category.id}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.5 + index * 0.1 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8 + index * 0.05 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         if (category.filter) {
                           const tag = hashtags?.find(t => t.name === category.filter);
@@ -182,30 +213,14 @@ export default function HomePage() {
                           setSelectedHashtag(null);
                         }
                       }}
-                      className="flex flex-col items-center gap-2 flex-shrink-0 group"
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                        isActive 
+                          ? 'bg-[#264348] text-white shadow-lg shadow-[#264348]/10' 
+                          : 'bg-white/60 dark:bg-white/5 text-[#264348]/70 dark:text-white/60 hover:bg-[#264348]/5 dark:hover:bg-white/10 border border-[#264348]/5 dark:border-white/5'
+                      }`}
                     >
-                      {/* Story Circle with Gradient Border */}
-                      <div className={`relative p-[3px] rounded-full transition-all duration-300 ${
-                        isActive 
-                          ? 'bg-gradient-to-br ' + category.gradient + ' shadow-lg ring-2 ring-primary/30' 
-                          : 'bg-gradient-to-br ' + category.gradient + ' opacity-60 hover:opacity-100'
-                      }`}>
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-background flex items-center justify-center overflow-hidden">
-                          <Icon className={`w-7 h-7 md:w-8 md:h-8 transition-all duration-300 ${
-                            isActive 
-                              ? 'text-primary' 
-                              : 'text-foreground/60 group-hover:text-foreground'
-                          }`} />
-                        </div>
-                      </div>
-                      {/* Category Name */}
-                      <span className={`text-xs md:text-sm font-medium transition-all duration-300 ${
-                        isActive 
-                          ? 'text-primary' 
-                          : 'text-foreground/60 group-hover:text-foreground'
-                      }`}>
-                        {category.name}
-                      </span>
+                      <Icon className="h-4 w-4" />
+                      {category.name}
                     </motion.button>
                   );
                 })}
@@ -217,46 +232,45 @@ export default function HomePage() {
       </section>
       
       {/* Posts Grid */}
-      <section className="py-8 md:py-12">
-        <div className="container mx-auto px-4">
+      <section className="py-8 md:py-16">
+        <div className="container mx-auto px-4 lg:px-8">
           <PostsGrid />
         </div>
       </section>
       
-      {/* Bottom CTA */}
-      <section className="py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="container mx-auto px-4 text-center relative">
+      {/* Bottom CTA - Minimal */}
+      <section className="py-20 md:py-32 relative">
+        <div className="container mx-auto px-4 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="max-w-xl mx-auto"
           >
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
-              <PartyPopper className="h-8 w-8 text-primary" />
-            </div>
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 
+              className="text-2xl md:text-3xl font-medium text-[#264348] dark:text-white mb-4"
+              style={{ fontFamily: 'Cinzel, Georgia, serif' }}
+            >
               Не нашли то, что искали?
             </h2>
-            <p className="text-foreground/60 mb-8 max-w-xl mx-auto">
-              Мы создадим уникальную композицию специально для вас! 
+            <p className="text-[#264348]/50 dark:text-white/40 mb-8">
+              Создадим уникальную композицию специально для вас.
               Свяжитесь с нами, и наши дизайнеры воплотят любую идею.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button
-                asChild
-                className="btn-premium bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8"
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link
+                href="/contacts"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#C9A962] hover:bg-[#C9A962]/90 text-white text-sm font-medium rounded-full transition-all duration-300"
               >
-                <Link href="/contacts">Связаться с нами</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="rounded-full px-8 border-primary/20 hover:bg-primary/5"
+                Связаться с нами
+              </Link>
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 px-6 py-3 text-[#264348]/70 dark:text-white/60 text-sm font-medium rounded-full border border-[#264348]/10 dark:border-white/10 hover:border-[#C9A962] hover:text-[#C9A962] transition-all duration-300"
               >
-                <Link href="/about">О компании</Link>
-              </Button>
+                О компании
+              </Link>
             </div>
           </motion.div>
         </div>
