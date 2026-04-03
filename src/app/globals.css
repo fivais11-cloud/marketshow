@@ -1,0 +1,438 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Sans:wght@300;400;500;600;700&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Noto Sans', system-ui, sans-serif;
+  --font-serif: 'Cinzel', Georgia, serif;
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Japanese-inspired custom colors */
+  --color-japan-blue: #264348;
+  --color-japan-gold: #C9A962;
+  --color-japan-purple: #6B4E71;
+  --color-japan-coral: #D4A5A5;
+  --color-japan-cream: #FAFAF8;
+  --color-japan-ink: #1a2f33;
+}
+
+/* Japanese Minimalism Theme - Premium & Serene */
+:root {
+  --radius: 1.25rem;
+  
+  /* Warm cream background - Ma (space) principle */
+  --background: #FAFAF8;
+  --foreground: #264348;
+  
+  /* Clean white cards with subtle shadow */
+  --card: rgba(255, 255, 255, 0.85);
+  --card-foreground: #264348;
+  
+  --popover: rgba(255, 255, 255, 0.98);
+  --popover-foreground: #264348;
+  
+  /* Japan Blue primary - sophisticated indigo */
+  --primary: #264348;
+  --primary-foreground: #FFFFFF;
+  
+  /* Soft cream secondary */
+  --secondary: #F5F3EF;
+  --secondary-foreground: #6B4E71;
+  
+  --muted: #EDEBE7;
+  --muted-foreground: #8B8178;
+  
+  /* Gold accent - premium touch */
+  --accent: #C9A962;
+  --accent-foreground: #264348;
+  
+  --destructive: #C47A7A;
+  --border: rgba(38, 67, 72, 0.12);
+  --input: rgba(38, 67, 72, 0.08);
+  --ring: #264348;
+  
+  /* Chart colors - Japanese palette */
+  --chart-1: #264348;
+  --chart-2: #C9A962;
+  --chart-3: #6B4E71;
+  --chart-4: #D4A5A5;
+  --chart-5: #8B8178;
+  
+  --sidebar: rgba(250, 250, 248, 0.92);
+  --sidebar-foreground: #264348;
+  --sidebar-primary: #264348;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F5F3EF;
+  --sidebar-accent-foreground: #6B4E71;
+  --sidebar-border: rgba(38, 67, 72, 0.08);
+  --sidebar-ring: #264348;
+}
+
+/* Dark Theme - Deep Ink */
+.dark {
+  --background: #1a1f21;
+  --foreground: #F5F3EF;
+  
+  /* Dark glass effect */
+  --card: rgba(38, 50, 53, 0.6);
+  --card-foreground: #F5F3EF;
+  
+  --popover: rgba(30, 38, 40, 0.98);
+  --popover-foreground: #F5F3EF;
+  
+  /* Lighter Japan Blue for dark mode */
+  --primary: #4A7A82;
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: rgba(74, 122, 130, 0.15);
+  --secondary-foreground: #D4A5A5;
+  
+  --muted: rgba(74, 122, 130, 0.1);
+  --muted-foreground: #A8B5B8;
+  
+  /* Brighter gold for dark mode */
+  --accent: #D4B86A;
+  --accent-foreground: #1a1f21;
+  
+  --destructive: #C47A7A;
+  --border: rgba(74, 122, 130, 0.15);
+  --input: rgba(74, 122, 130, 0.1);
+  --ring: #4A7A82;
+  
+  --chart-1: #4A7A82;
+  --chart-2: #D4B86A;
+  --chart-3: #9B7BA1;
+  --chart-4: #D4A5A5;
+  --chart-5: #A8B5B8;
+  
+  --sidebar: rgba(26, 31, 33, 0.95);
+  --sidebar-foreground: #F5F3EF;
+  --sidebar-primary: #4A7A82;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: rgba(74, 122, 130, 0.15);
+  --sidebar-accent-foreground: #D4A5A5;
+  --sidebar-border: rgba(74, 122, 130, 0.15);
+  --sidebar-ring: #4A7A82;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Noto Sans', system-ui, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* Minimal scrollbar - Japanese aesthetic */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(38, 67, 72, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(38, 67, 72, 0.35);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 98, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 169, 98, 0.35);
+}
+
+/* Glassmorphism - refined */
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass {
+  background: rgba(38, 50, 53, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(38, 67, 72, 0.06);
+  box-shadow: 0 4px 24px rgba(38, 67, 72, 0.04);
+}
+
+.dark .glass-card {
+  background: rgba(38, 50, 53, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Enso circle element */
+.enso {
+  position: relative;
+}
+
+.enso::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px solid currentColor;
+  border-radius: 50%;
+  border-right-color: transparent;
+  transform: rotate(-45deg);
+}
+
+/* Premium gradient text - Japan Blue to Gold */
+.gradient-text {
+  background: linear-gradient(135deg, #264348 0%, #C9A962 50%, #264348 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, #4A7A82 0%, #D4B86A 50%, #4A7A82 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Floating animation - zen-like calm */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(3deg);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 10s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Subtle glow - premium touch */
+@keyframes glow-subtle {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(201, 169, 98, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(201, 169, 98, 0.2);
+  }
+}
+
+.animate-glow-subtle {
+  animation: glow-subtle 4s ease-in-out infinite;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Smooth page transitions */
+.page-transition {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Premium button - refined */
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transition: left 0.6s ease;
+}
+
+.btn-premium:hover::before {
+  left: 100%;
+}
+
+.btn-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(38, 67, 72, 0.15);
+}
+
+/* Price tag style - elegant */
+.price-tag {
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #C9A962;
+}
+
+/* Hero gradient - subtle */
+.hero-gradient {
+  background: linear-gradient(180deg, 
+    rgba(250, 250, 248, 0) 0%, 
+    rgba(250, 250, 248, 0.6) 40%,
+    rgba(250, 250, 248, 1) 100%
+  );
+}
+
+.dark .hero-gradient {
+  background: linear-gradient(180deg, 
+    rgba(26, 31, 33, 0) 0%, 
+    rgba(26, 31, 33, 0.6) 40%,
+    rgba(26, 31, 33, 1) 100%
+  );
+}
+
+/* Seigaiha pattern background */
+.pattern-seigaiha {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='40' viewBox='0 0 80 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40a19.96 19.96 0 0 1 5.9-14.11 20.17 20.17 0 0 1 19.44-5.2A20 20 0 0 1 20.2 40H0zM40 40a20 20 0 0 1-14.11-5.9 19.96 19.96 0 0 1-5.2-19.44A20.17 20.17 0 0 1 40 0v40zM40 40a20 20 0 0 1 14.11-5.9 19.96 19.96 0 0 1 5.2-19.44A20.17 20.17 0 0 1 40 0v40zM80 40a19.96 19.96 0 0 1-5.9-14.11 20.17 20.17 0 0 1-19.44-5.2A20 20 0 0 1 59.8 40H80z' fill='%23264348' fill-opacity='0.03'/%3E%3C/svg%3E");
+}
+
+.dark .pattern-seigaiha {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='40' viewBox='0 0 80 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40a19.96 19.96 0 0 1 5.9-14.11 20.17 20.17 0 0 1 19.44-5.2A20 20 0 0 1 20.2 40H0zM40 40a20 20 0 0 1-14.11-5.9 19.96 19.96 0 0 1-5.2-19.44A20.17 20.17 0 0 1 40 0v40zM40 40a20 20 0 0 1 14.11-5.9 19.96 19.96 0 0 1 5.2-19.44A20.17 20.17 0 0 1 40 0v40zM80 40a19.96 19.96 0 0 1-5.9-14.11 20.17 20.17 0 0 1-19.44-5.2A20 20 0 0 1 59.8 40H80z' fill='%23C9A962' fill-opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* Card hover effect - subtle lift */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(38, 67, 72, 0.08);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+/* Asymmetric layout helper */
+.asymmetric-left {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+.asymmetric-right {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Typography refinements */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Focus styles - accessible */
+:focus-visible {
+  outline: 2px solid #C9A962;
+  outline-offset: 2px;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(201, 169, 98, 0.2);
+  color: #264348;
+}
+
+.dark ::selection {
+  background: rgba(201, 169, 98, 0.3);
+  color: #F5F3EF;
+}

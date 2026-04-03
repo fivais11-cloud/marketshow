@@ -1,0 +1,52 @@
+{
+  "name": "Маркет Шоу — Воздушные шары",
+  "short_name": "Маркет Шоу",
+  "description": "Доставка воздушных шаров премиум-класса по Москве. Оформление праздников, фотозоны, гирлянды и композиции из шаров.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#C4A4A4",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ru-RU",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Каталог шаров",
+      "short_name": "Каталог",
+      "description": "Смотреть каталог воздушных шаров",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Контакты",
+      "short_name": "Контакты",
+      "description": "Связаться с Маркет Шоу",
+      "url": "/contacts",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Доставка",
+      "short_name": "Доставка",
+      "description": "Условия доставки и оплаты",
+      "url": "/delivery",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

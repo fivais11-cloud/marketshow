@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+model Post {
+  id             String        @id @default(cuid())
+  title          String        @default("Товар")
+  imageUrl       String
+  description    String
+  price          Int           @default(0)
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String?
+  likes          Int           @default(0)
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  likesRecords   Like[]
+  orderItems     OrderItem[]
+  hashtags       PostHashtag[]
+
+  @@map("posts")
+}
+
+model Hashtag {
+  id         String        @id @default(cuid())
+  name       String        @unique
+  clickCount Int           @default(0)
+  createdAt  DateTime      @default(now())
+  posts      PostHashtag[]
+
+  @@map("hashtags")
+}
+
+model PostHashtag {
+  postId    String
+  hashtagId String
+  hashtag   Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  post      Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, hashtagId])
+  @@map("post_hashtags")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  sessionId String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, sessionId])
+  @@map("likes")
+}
+
+model SiteSettings {
+  id               String  @id @default(cuid())
+  companyName      String  @default("Маркет Шоу")
+  phone            String  @default("+7 985 800 97 19")
+  telegram         String? @default("https://t.me/TanyaShow")
+  max              String? @default("https://max.ru/chat/marketshow")
+  telegramBotToken String?
+  telegramChatId   String?
+  address          String? @default("Москва")
+  workingHours     String? @default("Пн-Вс: 9:00 - 21:00")
+  aboutText        String? @default("Маркет Шоу - премиум оформление праздников воздушными шарами")
+  deliveryText     String? @default("Доставка по Москве - бесплатно от 3000₽")
+  adminPassword    String  @default("admin123")
+
+  @@map("site_settings")
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  customerName String?
+  phone        String
+  email        String?
+  totalPrice   Int
+  status       String      @default("new")
+  source       String?
+  createdAt    DateTime    @default(now())
+  items        OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id       String @id @default(cuid())
+  orderId  String
+  postId   String
+  quantity Int    @default(1)
+  price    Int
+  order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  post     Post   @relation(fields: [postId], references: [id])
+
+  @@map("order_items")
+}
+
+model CallbackRequest {
+  id        String   @id @default(cuid())
+  name      String?
+  phone     String
+  source    String?
+  message   String?
+  type      String   @default("callback")
+  createdAt DateTime @default(now())
+
+  @@map("callback_requests")
+}
