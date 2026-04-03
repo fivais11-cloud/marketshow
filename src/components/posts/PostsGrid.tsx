@@ -1,17 +1,44 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { PostCard } from './PostCard';
 import { useAppStore } from '@/store/useAppStore';
 import { usePosts } from '@/hooks/useApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, ChevronDown } from 'lucide-react';
+import { Post } from '@/store/useAppStore';
+
+const ITEMS_PER_PAGE = 12;
 
 export function PostsGrid() {
-  const { posts, searchQuery, selectedHashtag, setSelectedHashtag, setSearchQuery } = useAppStore();
-  const { isLoading, refetch } = usePosts(searchQuery || undefined, selectedHashtag || undefined);
+  const { posts, searchQuery, selectedHashtag, setSelectedHashtag, setSearchQuery, setPosts } = useAppStore();
+  const [offset, setOffset] = useState(0);
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  
+  const { isLoading, refetch, data } = usePosts(searchQuery || undefined, selectedHashtag || undefined, offset);
+  
+  // Reset when filters change
+  useEffect(() => {
+    setOffset(0);
+    setAllPosts([]);
+  }, [searchQuery, selectedHashtag]);
+  
+  // Update posts when data changes
+  useEffect(() => {
+    if (data) {
+      if (offset === 0) {
+        setAllPosts(data.posts);
+      } else {
+        setAllPosts(prev => [...prev, ...data.posts]);
+      }
+      setHasMore(data.hasMore);
+      setLoadingMore(false);
+    }
+  }, [data, offset]);
   
   useEffect(() => {
     refetch();
@@ -22,7 +49,14 @@ export function PostsGrid() {
     setSearchQuery('');
   };
   
-  if (isLoading) {
+  const loadMore = () => {
+    setLoadingMore(true);
+    setOffset(prev => prev + ITEMS_PER_PAGE);
+  };
+  
+  const isLoadingInitial = isLoading && offset === 0 && allPosts.length === 0;
+  
+  if (isLoadingInitial) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
@@ -95,13 +129,43 @@ export function PostsGrid() {
         </motion.div>
       )}
       
-      {/* Posts Grid - More spacing (Ma principle) */}
-      {posts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
-          {posts.map((post, index) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
+      {/* Posts Grid - Instagram style on mobile, grid on desktop */}
+      {allPosts.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
+            {allPosts.map((post, index) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+          
+          {/* Load More Button */}
+          {hasMore && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-center mt-12"
+            >
+              <Button
+                onClick={loadMore}
+                disabled={loadingMore}
+                variant="outline"
+                className="px-8 py-6 rounded-full border-[#264348]/10 dark:border-white/10 hover:border-[#C9A962] hover:text-[#C9A962] text-sm font-medium transition-all duration-300"
+              >
+                {loadingMore ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Загрузка...
+                  </>
+                ) : (
+                  <>
+                    Показать ещё
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          )}
+        </>
       ) : (
         <motion.div 
           initial={{ opacity: 0 }}

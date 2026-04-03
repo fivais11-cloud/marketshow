@@ -5,21 +5,26 @@ import { useAppStore, Post, Hashtag, SiteSettings, CartItem } from '@/store/useA
 
 // ============ POSTS ============
 
-export function usePosts(search?: string, hashtag?: string) {
+export function usePosts(search?: string, hashtag?: string, offset: number = 0) {
   const { setPosts, setIsLoadingPosts, sessionId } = useAppStore();
   
   return useQuery({
-    queryKey: ['posts', search, hashtag],
+    queryKey: ['posts', search, hashtag, offset],
     queryFn: async () => {
       setIsLoadingPosts(true);
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (hashtag) params.append('hashtag', hashtag);
+      params.append('limit', '12');
+      params.append('offset', offset.toString());
       
       const response = await fetch(`/api/posts?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch posts');
       
-      const posts: Post[] = await response.json();
+      const data = await response.json();
+      const posts: Post[] = data.posts;
+      const total = data.total;
+      const hasMore = data.hasMore;
       
       // Fetch like status for each post
       const postsWithLikes = await Promise.all(
@@ -41,7 +46,7 @@ export function usePosts(search?: string, hashtag?: string) {
       
       setPosts(postsWithLikes);
       setIsLoadingPosts(false);
-      return postsWithLikes;
+      return { posts: postsWithLikes, total, hasMore };
     },
   });
 }

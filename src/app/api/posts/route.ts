@@ -10,15 +10,17 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-// GET all posts with optional filtering
+// GET all posts with optional filtering and pagination
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const hashtag = searchParams.get('hashtag');
     const search = searchParams.get('search');
+    const limit = parseInt(searchParams.get('limit') || '12');
+    const offset = parseInt(searchParams.get('offset') || '0');
     
-    // Build query
-    let query = 'select=*,hashtags:post_hashtags(hashtag:hashtags(*))&is_active=eq.true&order=created_at.desc';
+    // Build base filter conditions
+    let filterIds: string[] | null = null;
     
     if (hashtag) {
       // Filter by hashtag - need to join
@@ -29,29 +31,49 @@ export async function GET(request: NextRequest) {
           `${SUPABASE_URL}/rest/v1/post_hashtags?hashtag_id=eq.${tags[0].id}&select=post_id`,
           { headers }
         );
-        const postIds = (await postsWithTag.json()).map((p: { post_id: string }) => p.post_id);
-        if (postIds.length > 0) {
-          query += `&id=in.(${postIds.join(',')})`;
-        } else {
-          return NextResponse.json([]);
-        }
+        filterIds = (await postsWithTag.json()).map((p: { post_id: string }) => p.post_id);
       } else {
-        return NextResponse.json([]);
+        return NextResponse.json({ posts: [], total: 0, hasMore: false });
       }
     }
     
+    // Build count query
+    let countQuery = 'select=id&is_active=eq.true';
+    if (filterIds && filterIds.length > 0) {
+      countQuery += `&id=in.(${filterIds.join(',')})`;
+    } else if (filterIds !== null && filterIds.length === 0) {
+      return NextResponse.json({ posts: [], total: 0, hasMore: false });
+    }
     if (search) {
-      query += `&or=(title.ilike.%25${search}%25,description.ilike.%25${search}%25)`;
+      countQuery += `&or=(title.ilike.%25${search}%25,description.ilike.%25${search}%25)`;
     }
     
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/posts?${query}`, {
+    // Get total count
+    const countResponse = await fetch(`${SUPABASE_URL}/rest/v1/posts?${countQuery}`, {
+      headers: { ...headers, 'Prefer': 'count=exact' },
+    });
+    const countData = await countResponse.json();
+    const total = countData.length;
+    
+    // Build posts query
+    let postsQuery = 'select=*,hashtags:post_hashtags(hashtag:hashtags(*))&is_active=eq.true&order=created_at.desc';
+    postsQuery += `&limit=${limit}&offset=${offset}`;
+    
+    if (filterIds && filterIds.length > 0) {
+      postsQuery += `&id=in.(${filterIds.join(',')})`;
+    }
+    if (search) {
+      postsQuery += `&or=(title.ilike.%25${search}%25,description.ilike.%25${search}%25)`;
+    }
+    
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/posts?${postsQuery}`, {
       headers,
       cache: 'no-store',
     });
     
     if (!response.ok) {
       console.error('Failed to fetch posts:', await response.text());
-      return NextResponse.json([]);
+      return NextResponse.json({ posts: [], total: 0, hasMore: false });
     }
     
     const posts = await response.json();
@@ -72,7 +94,11 @@ export async function GET(request: NextRequest) {
       hashtags: post.hashtags?.map((h: any) => h.hashtag).filter(Boolean) || [],
     }));
     
-    return NextResponse.json(formattedPosts);
+    return NextResponse.json({
+      posts: formattedPosts,
+      total,
+      hasMore: offset + limit < total,
+    });
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
