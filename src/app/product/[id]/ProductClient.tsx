@@ -362,7 +362,7 @@ export function ProductClient() {
                 className="flex-1 h-12 rounded-full border-[#264348]/10 dark:border-white/10 hover:border-[#C9A962] hover:text-[#C9A962]"
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
-                Максим
+                Max
               </Button>
             </div>
 
@@ -465,7 +465,7 @@ export function ProductClient() {
             className="flex-1 h-10 rounded-full text-xs border-[#264348]/10 dark:border-white/10"
           >
             <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-            Максим
+            Max
           </Button>
           <Button
             variant="outline"
