@@ -157,7 +157,7 @@ export function ProductClient() {
   }
 
   return (
-    <div className="min-h-screen pt-16 md:pt-20 pb-8 md:pb-12 bg-[#FAFAF8] dark:bg-[#0f1419]">
+    <div className="min-h-screen pt-16 md:pt-20 pb-40 md:pb-12 bg-[#FAFAF8] dark:bg-[#0f1419]">
       <div className="container mx-auto px-4 py-4 md:py-6">
         {/* Back Button */}
         <motion.div

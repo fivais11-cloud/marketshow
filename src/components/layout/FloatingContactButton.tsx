@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Phone, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,11 @@ export function FloatingContactButton({ source }: FloatingContactButtonProps) {
   const [phone, setPhone] = useState('');
   const { data: settings } = useSettings();
   const callbackMutation = useCallbackMutation();
+  const pathname = usePathname();
+  
+  // Скрываем кнопку на странице товара (там уже есть кнопки связи)
+  const isProductPage = pathname?.startsWith('/product/');
+  if (isProductPage) return null;
   
   const handleTelegramClick = () => {
     const text = source 
