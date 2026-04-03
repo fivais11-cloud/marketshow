@@ -61,6 +61,7 @@ interface AppState {
   isCartOpen: boolean;
   theme: 'light' | 'dark';
   cartAnimationId: number;
+  likedPosts: string[];
   
   setSearchQuery: (query: string) => void;
   setSelectedHashtag: (hashtag: string | null) => void;
@@ -83,6 +84,7 @@ interface AppState {
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
   triggerCartAnimation: () => void;
+  toggleLike: (postId: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -101,6 +103,7 @@ export const useAppStore = create<AppState>()(
       isCartOpen: false,
       theme: 'light',
       cartAnimationId: 0,
+      likedPosts: [],
       
       setSearchQuery: (query) => set({ searchQuery: query }),
       setSelectedHashtag: (hashtag) => set({ selectedHashtag: hashtag, searchQuery: '' }),
@@ -174,6 +177,15 @@ export const useAppStore = create<AppState>()(
       triggerCartAnimation: () => {
         set({ cartAnimationId: get().cartAnimationId + 1 });
       },
+      
+      toggleLike: (postId) => {
+        const likedPosts = get().likedPosts;
+        if (likedPosts.includes(postId)) {
+          set({ likedPosts: likedPosts.filter(id => id !== postId) });
+        } else {
+          set({ likedPosts: [...likedPosts, postId] });
+        }
+      },
     }),
     {
       name: 'market-show-storage',
@@ -182,6 +194,7 @@ export const useAppStore = create<AppState>()(
         selectedHashtag: state.selectedHashtag,
         cart: state.cart,
         theme: state.theme,
+        likedPosts: state.likedPosts,
       }),
       onRehydrateStorage: () => (state) => {
         if (state && !state.sessionId) {
